@@ -1,0 +1,11 @@
+## Descargar el Docker
+docker pull 
+
+## Crear el Docker que contiene la base por primer vez
+docker run --name mysql-server -e MYSQL_ROOT_PASSWORD=12345 -p 3306:3306 -d mysql:9.3.0
+
+## Iniciar servicio de Docker
+docker start mysql-server
+
+## Acceder al Docker
+$ docker exec -it mysql-server bash
