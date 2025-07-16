@@ -23,13 +23,52 @@ public class PizzaController {
 
     @GetMapping
     public ResponseEntity<List<PizzaEntity>> getAll(){
-        return ResponseEntity.ok(pizzaService.getAll());
+        return ResponseEntity.ok(this.pizzaService.getAll());
     }
 
     @GetMapping("/{idPizza}")
     public ResponseEntity<PizzaEntity> getById(@PathVariable Integer idPizza){
-        PizzaEntity pizza = pizzaService.get(idPizza);
-        return pizza != null ? ResponseEntity.ok(pizza) : ResponseEntity.notFound().build();
+        return this.pizzaService.get(idPizza)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(params = "name")
+    public ResponseEntity<PizzaEntity> getById(@RequestParam String name){
+        return this.pizzaService.getByName(name)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<PizzaEntity>> getAvailable(){
+        return ResponseEntity.ok(this.pizzaService.getAvailable());
+    }
+
+    @GetMapping(params = "ingredients", path = "/with")
+    public ResponseEntity<List<PizzaEntity>> getWith(@RequestParam String ingredients){
+        try{
+            List<PizzaEntity> pizzas = this.pizzaService.getWith(ingredients);
+            if (pizzas.isEmpty()){
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(pizzas);
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping(params = "ingredients", path = "/withOut")
+    public ResponseEntity<List<PizzaEntity>> getWithOut(@RequestParam String ingredients){
+        try{
+            List<PizzaEntity> pizzas = this.pizzaService.getWithOut(ingredients);
+            if (pizzas.isEmpty()){
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(pizzas);
+        }catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 //    @PostMapping
@@ -45,7 +84,7 @@ public class PizzaController {
     public ResponseEntity<?> add(@RequestBody PizzaEntity pizza){
         try {
             if(pizza.getIdPizza() == null) {
-                PizzaEntity savedPizza = pizzaService.save(pizza);
+                PizzaEntity savedPizza = this.pizzaService.save(pizza);
                 return ResponseEntity.created(URI.create("/" + savedPizza.getIdPizza())).body(savedPizza);
             }
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Pizza already exists");
@@ -57,8 +96,8 @@ public class PizzaController {
     @PutMapping
     public ResponseEntity<PizzaEntity> update(@RequestBody PizzaEntity pizza){
         try {
-            if (pizza.getIdPizza() != null && pizzaService.exists(pizza.getIdPizza())) {
-                return ResponseEntity.ok(pizzaService.save(pizza));
+            if (pizza.getIdPizza() != null && this.pizzaService.exists(pizza.getIdPizza())) {
+                return ResponseEntity.ok(this.pizzaService.save(pizza));
             }
             return ResponseEntity.notFound().build();
         } catch (Exception e){
@@ -68,6 +107,6 @@ public class PizzaController {
 
     @DeleteMapping("/delete/{idPizza}")
     public ResponseEntity<Void> delete(@PathVariable Integer idPizza){
-        return pizzaService.delete(idPizza) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        return this.pizzaService.delete(idPizza) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }
