@@ -3,13 +3,13 @@ package com.api.pizzeria.web.controller;
 import com.api.pizzeria.persistence.entity.PizzaEntity;
 import com.api.pizzeria.service.PizzaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pizzas")
@@ -22,8 +22,9 @@ public class PizzaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PizzaEntity>> getAll(){
-        return ResponseEntity.ok(this.pizzaService.getAll());
+    public ResponseEntity<Page<PizzaEntity>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "5") int size){
+        return ResponseEntity.ok(this.pizzaService.getAll(page, size));
     }
 
     @GetMapping("/{idPizza}")
@@ -41,8 +42,11 @@ public class PizzaController {
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<PizzaEntity>> getAvailable(){
-        return ResponseEntity.ok(this.pizzaService.getAvailable());
+    public ResponseEntity<Page<PizzaEntity>> getAvailable(@RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "5") int size,
+                                                          @RequestParam(defaultValue = "price") String orderBy,
+                                                          @RequestParam(defaultValue = "ASC") String sortDirection){
+        return ResponseEntity.ok(this.pizzaService.getAvailable(page, size, orderBy, sortDirection));
     }
 
     @GetMapping(params = "ingredients", path = "/with")
@@ -50,7 +54,7 @@ public class PizzaController {
         try{
             List<PizzaEntity> pizzas = this.pizzaService.getWith(ingredients);
             if (pizzas.isEmpty()){
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(pizzas);
         }catch (Exception e) {
@@ -63,13 +67,24 @@ public class PizzaController {
         try{
             List<PizzaEntity> pizzas = this.pizzaService.getWithOut(ingredients);
             if (pizzas.isEmpty()){
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(pizzas);
         }catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping(params = "price", path = "/cheapest")
+    public ResponseEntity<List<PizzaEntity>> getCheapest(@RequestParam double price){
+        try {
+            List<PizzaEntity> pizzas = this.pizzaService.getCheapest(price);
+            return !pizzas.isEmpty() ? ResponseEntity.ok(pizzas) : ResponseEntity.noContent().build();
+        } catch (Exception e){
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
 //    @PostMapping
 //    public ResponseEntity<PizzaEntity> add(@RequestBody PizzaEntity pizza){
@@ -107,6 +122,6 @@ public class PizzaController {
 
     @DeleteMapping("/delete/{idPizza}")
     public ResponseEntity<Void> delete(@PathVariable Integer idPizza){
-        return this.pizzaService.delete(idPizza) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        return this.pizzaService.delete(idPizza) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

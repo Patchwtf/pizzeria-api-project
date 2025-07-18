@@ -3,8 +3,10 @@ package com.api.pizzeria.service;
 import com.api.pizzeria.persistence.entity.PizzaEntity;
 import com.api.pizzeria.persistence.repository.PizzaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,20 +34,23 @@ public class PizzaService {
         this.pizzaRepository = pizzaRepository;
     }
 
-    public List<PizzaEntity> getAll(){
-        return this.pizzaRepository.findAll();
+    public Page<PizzaEntity> getAll(int page, int size){
+        Pageable pageRequest = PageRequest.of(page, size);
+        return this.pizzaRepository.findAll(pageRequest);
     }
 
     public Optional<PizzaEntity> get(Integer idPizza){
         return (this.pizzaRepository.findById(idPizza));
     }
 
-    public List<PizzaEntity> getAvailable(){
-        return this.pizzaRepository.findAllByAvailableTrueOrderByPrice();
+    public Page<PizzaEntity> getAvailable(int page, int size, String sortBy, String sortDirection){
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageRequest = PageRequest.of(page, size, sort);
+        return this.pizzaRepository.findAllByAvailableTrue(pageRequest);
     }
 
     public Optional<PizzaEntity> getByName(String name){
-        return Optional.ofNullable(this.pizzaRepository.findAllByAvailableTrueAndNameIgnoreCase(name));
+        return Optional.ofNullable(this.pizzaRepository.findFirstByAvailableTrueAndNameIgnoreCase(name));
     }
 
     public List<PizzaEntity> getWith(String ingredient){
@@ -70,5 +75,9 @@ public class PizzaService {
                 return true;
             }
             return false;
+    }
+
+    public List<PizzaEntity> getCheapest(double price){
+        return this.pizzaRepository.findTop3ByAvailableTrueAndPriceLessThanEqualOrderByPriceAsc(price);
     }
 }
