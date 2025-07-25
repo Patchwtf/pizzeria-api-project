@@ -2,12 +2,15 @@ package com.api.pizzeria.service;
 
 import com.api.pizzeria.persistence.entity.PizzaEntity;
 import com.api.pizzeria.persistence.repository.PizzaRepository;
+import com.api.pizzeria.service.dto.UpdatePizzaPriceDto;
+import com.api.pizzeria.service.exception.EmailApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -79,5 +82,16 @@ public class PizzaService {
 
     public List<PizzaEntity> getCheapest(double price){
         return this.pizzaRepository.findTop3ByAvailableTrueAndPriceLessThanEqualOrderByPriceAsc(price);
+    }
+
+    @Transactional(noRollbackFor = EmailApiException.class)
+    public void updatePrice(UpdatePizzaPriceDto dto){
+        this.pizzaRepository.updatePrice(dto);
+        this.sendEmail();
+    }
+
+    private void sendEmail(){
+        /*Ejemplo de excepcion*/
+        throw new EmailApiException();
     }
 }

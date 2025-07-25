@@ -1,13 +1,15 @@
 package com.api.pizzeria.service;
 
 import com.api.pizzeria.persistence.entity.OrderEntity;
+import com.api.pizzeria.persistence.projection.OrderSummary;
 import com.api.pizzeria.persistence.repository.OrderRepository;
+import com.api.pizzeria.service.dto.RandomOrderDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -36,5 +38,18 @@ public class OrderService {
     public  Optional<List<OrderEntity>> getOutsideOrders(){
         List<String> methods = Arrays.asList(DELIVERY, CARRYOUT);
         return Optional.ofNullable(this.orderRepository.findAllByMethodIn(methods));
+    }
+
+    public Optional<List<OrderEntity>> getCustomerOrders(String idCustomer){
+        return Optional.ofNullable(this.orderRepository.findCustomerOrders(idCustomer));
+    }
+
+    public Optional<OrderSummary> getSummary(int orderId){
+        return Optional.ofNullable(this.orderRepository.findSummary(orderId));
+    }
+
+    @Transactional
+    public boolean saveRandomOrder(RandomOrderDto randomOrderDto){
+        return this.orderRepository.saveRandomOrder(randomOrderDto.getIdCustomer(), randomOrderDto.getMethod());
     }
 }

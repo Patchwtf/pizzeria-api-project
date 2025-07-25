@@ -1,21 +1,24 @@
 package com.api.pizzeria.persistence.entity;
 
+import com.api.pizzeria.persistence.audit.AuditableEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "pizza_order")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
-public class OrderEntity {
+public class OrderEntity extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,5 +47,6 @@ public class OrderEntity {
 
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     @JsonManagedReference
+    @OrderBy("price DESC")
     private List<OrderItemEntity> items;
 }

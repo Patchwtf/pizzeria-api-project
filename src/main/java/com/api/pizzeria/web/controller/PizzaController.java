@@ -2,10 +2,12 @@ package com.api.pizzeria.web.controller;
 
 import com.api.pizzeria.persistence.entity.PizzaEntity;
 import com.api.pizzeria.service.PizzaService;
+import com.api.pizzeria.service.dto.UpdatePizzaPriceDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -115,6 +117,19 @@ public class PizzaController {
                 return ResponseEntity.ok(this.pizzaService.save(pizza));
             }
             return ResponseEntity.notFound().build();
+        } catch (Exception e){
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PutMapping("/price")
+    public ResponseEntity<Void> updatePrice(@RequestBody UpdatePizzaPriceDto dto){
+        try {
+            if (!this.pizzaService.exists(dto.getPizzaId())) {
+                return ResponseEntity.notFound().build();
+            }
+            this.pizzaService.updatePrice(dto);
+            return ResponseEntity.noContent().build();
         } catch (Exception e){
             return ResponseEntity.internalServerError().build();
         }

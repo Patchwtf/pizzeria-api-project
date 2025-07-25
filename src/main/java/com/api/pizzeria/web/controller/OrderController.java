@@ -2,11 +2,10 @@ package com.api.pizzeria.web.controller;
 
 import com.api.pizzeria.persistence.entity.OrderEntity;
 import com.api.pizzeria.service.OrderService;
+import com.api.pizzeria.service.dto.RandomOrderDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,5 +42,28 @@ public class OrderController {
                  .orElse(ResponseEntity.internalServerError().build());
      }
 
+     @GetMapping(path = "/customers")
+     public ResponseEntity<?> getCustomerOrders(@RequestParam String id){
+         return this.orderService.getCustomerOrders(id)
+                 .map(orders -> orders.isEmpty()
+                         ? ResponseEntity.noContent().build()
+                         : ResponseEntity.ok(orders))
+                 .orElse(ResponseEntity.internalServerError().build());
+     }
 
+     @GetMapping(path = "/summary")
+     public ResponseEntity<?> getCSummary(@RequestParam int id){
+         return this.orderService.getSummary(id)
+                 .map(ResponseEntity::ok)
+                 .orElse(ResponseEntity.notFound().build());
+     }
+
+     @PostMapping("/random")
+     public ResponseEntity<Boolean> randomOrder(@RequestBody RandomOrderDto dto){
+        try {
+            return ResponseEntity.ok(this.orderService.saveRandomOrder(dto));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
+     }
 }
